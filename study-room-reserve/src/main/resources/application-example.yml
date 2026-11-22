@@ -1,0 +1,35 @@
+server:
+  port: 8080
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/study_room_reserve?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowMultiQueries=true
+    username: root
+    password: "改成你的数据库密码"
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+  sql:
+    init:
+      dependency-detection:
+        enabled: false
+mybatis-plus:
+  mapper-locations: classpath:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      logic-delete-field: isDeleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+jwt:
+  secret: abcdefghijklmnopabcdefghijklmnopabcdefghijklmnop
+  expire: 86400000
+knife4j:
+  enable: true
+deepseek:
+  api-key: sk-改成你的DeepSeek密钥
+  base-url: https://api.deepseek.com
+  model: deepseek-chat

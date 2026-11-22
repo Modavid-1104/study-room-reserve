@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 主按钮：统一圆角 -->
+    <style name="Widget.App.Button" parent="Widget.Material3.Button">
+        <item name="cornerRadius">10dp</item>
+    </style>
+
+    <!-- 描边按钮：卡片内次要操作用 -->
+    <style name="Widget.App.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="cornerRadius">10dp</item>
+    </style>
+</resources>

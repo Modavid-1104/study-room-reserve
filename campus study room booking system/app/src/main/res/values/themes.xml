@@ -1,0 +1,13 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.CampusStudyRoomBookingSystem" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/brand_primary</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+        <item name="android:colorBackground">@color/bg_light</item>
+        <item name="colorSurface">@color/surface_light</item>
+        <item name="android:textColorPrimary">@color/text_primary_light</item>
+        <item name="android:statusBarColor">@color/bg_light</item>
+        <item name="materialButtonStyle">@style/Widget.App.Button</item>
+    </style>
+
+    <style name="Theme.CampusStudyRoomBookingSystem" parent="Base.Theme.CampusStudyRoomBookingSystem" />
+</resources>
