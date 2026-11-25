@@ -9,4 +9,8 @@ import java.util.List;
 public interface ReviewService extends IService<Review> {
     void createReview(Long userId, ReviewVo vo);
     List<Review> listByRoom(Long roomId);
+    void createReviewWithMedia(Long userId, Long reservationId, Integer score,
+                               String content,
+                               org.springframework.web.multipart.MultipartFile[] files);
+
 }

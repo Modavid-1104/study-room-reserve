@@ -24,12 +24,16 @@ import com.example.campusstudyroombookingsystem.model.CreateReservationRequest;
 
 import java.util.List;
 
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
+import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
@@ -121,5 +125,22 @@ public interface ApiService {
     // POST ai/chat AI对话
     @POST("ai/chat")
     Call<ApiResponse<String>> aiChat(@Body ChatRequestBody body);
+
+    @Multipart
+    @POST("reservation/sign/photo/{id}")
+    Call<ApiResponse<Void>> signWithPhoto(@Path("id") Long id,
+                                          @Part("lat") RequestBody lat,
+                                          @Part("lon") RequestBody lon,
+                                          @Part MultipartBody.Part file);
+
+
+    @Multipart
+    @POST("review/create/media")
+    Call<ApiResponse<Void>> createReviewMedia(
+            @Part("reservationId") RequestBody reservationId,
+            @Part("score") RequestBody score,
+            @Part("content") RequestBody content,
+            @Part List<MultipartBody.Part> files);
+
 
 }

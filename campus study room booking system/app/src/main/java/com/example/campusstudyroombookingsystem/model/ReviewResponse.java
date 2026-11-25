@@ -1,5 +1,7 @@
 package com.example.campusstudyroombookingsystem.model;
 
+import java.util.List;
+
 public class ReviewResponse {
     private Long id;
     private Long reservationId;
@@ -8,6 +10,10 @@ public class ReviewResponse {
     private Integer score;
     private String content;
     private String createTime;
+    private List<ReviewMediaResponse> mediaList;
+
+    public List<ReviewMediaResponse> getMediaList() { return mediaList; }
+
 
     public Long getId() { return id; }
     public Long getReservationId() { return reservationId; }

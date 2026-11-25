@@ -14,3 +14,7 @@
 *.iml
 .vscode/
 .DS_Store
+
+### 调试日志与运行时上传目录 ###
+app_log.txt
+reservation_Image/

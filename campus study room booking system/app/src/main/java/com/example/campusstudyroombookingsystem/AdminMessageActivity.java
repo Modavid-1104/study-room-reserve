@@ -54,8 +54,14 @@ public class AdminMessageActivity extends AppCompatActivity {
         req.setContent(content);
         // 填了用户ID就单发，留空则 null（后端识别为群发）
         if (!userIdText.isEmpty()) {
-            req.setUserId(Long.parseLong(userIdText));
+            try {
+                req.setUserId(Long.parseLong(userIdText));
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "用户ID必须是数字", Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
+
 
         RetrofitClient.getApiService(this)
                 .sendMessage(req)

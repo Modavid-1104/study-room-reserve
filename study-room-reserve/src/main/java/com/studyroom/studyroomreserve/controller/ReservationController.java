@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -66,6 +67,16 @@ public class ReservationController {
     @Operation(summary = "学习统计")
     public Result<StatisticsVo> statistics(@RequestAttribute("userId") Long userId) {
         return Result.success(reservationService.getStatistics(userId));
+    }
+
+    @PostMapping("/sign/photo/{id}")
+    public Result signWithPhoto(@RequestAttribute("userId") Long userId,
+                                @PathVariable Long id,
+                                @RequestParam("lat") Double lat,
+                                @RequestParam("lon") Double lon,
+                                @RequestParam("file") MultipartFile file) {
+        reservationService.signWithPhoto(userId, id, lat, lon, file);
+        return Result.success();
     }
 
 

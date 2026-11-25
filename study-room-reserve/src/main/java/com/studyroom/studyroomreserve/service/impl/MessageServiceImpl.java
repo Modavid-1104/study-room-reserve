@@ -12,6 +12,8 @@ import com.studyroom.studyroomreserve.service.UserService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.studyroom.studyroomreserve.ws.WebSocketServer;
+import cn.hutool.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,15 +46,16 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
             throw new BizException(400,"消息标题不存在");
         }
         if (vo.getUserId() != null) {
-            // 单发：校验用户存在
+            // 单发
             User user = userService.getById(vo.getUserId());
             if (user == null) {
                 throw new BizException(400, "目标用户不存在");
             }
             Message msg = buildMessage(vo, vo.getUserId());
             this.save(msg);
+            push(msg);
         } else {
-            // 群发：查所有学生(role=0)，每人插一条
+            // 群发：所有学生
             List<User> users = userService.list(
                     new LambdaQueryWrapper<User>().eq(User::getRole, 0));
             List<Message> messages = new ArrayList<>();
@@ -60,8 +63,21 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
                 messages.add(buildMessage(vo, u.getId()));
             }
             this.saveBatch(messages);
+            for (Message m : messages) {
+                push(m);
+            }
         }
     }
+
+    // 把消息组成 JSON 推给在线用户
+    private void push(Message msg) {
+        JSONObject json = new JSONObject();
+        json.set("id", msg.getId());
+        json.set("title", msg.getTitle());
+        json.set("content", msg.getContent());
+        WebSocketServer.sendToUser(msg.getUserId(), json.toString());
+    }
+
 
     private Message buildMessage(MessageSendVo vo, Long userId) {
         Message msg = new Message();

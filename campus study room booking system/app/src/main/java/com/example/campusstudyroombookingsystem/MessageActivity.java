@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.campusstudyroombookingsystem.model.ApiResponse;
 import com.example.campusstudyroombookingsystem.model.MessageResponse;
 import com.example.campusstudyroombookingsystem.network.RetrofitClient;
+import com.example.campusstudyroombookingsystem.util.WebSocketManager;
 import com.google.android.material.appbar.MaterialToolbar;
 
 import java.util.List;
@@ -19,7 +20,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MessageActivity extends AppCompatActivity {
+public class MessageActivity extends AppCompatActivity
+        implements WebSocketManager.MessageListener {
 
     private MessageAdapter adapter;
 
@@ -95,6 +97,24 @@ public class MessageActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onMessage(String text) {
+        loadMessages();   // 收到推送，重新拉取列表
+        Toast.makeText(this, "收到新消息", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        WebSocketManager.get().addListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        WebSocketManager.get().removeListener(this);
     }
 
 }

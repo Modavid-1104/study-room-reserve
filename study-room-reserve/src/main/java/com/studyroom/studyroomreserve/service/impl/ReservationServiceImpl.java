@@ -3,6 +3,7 @@ package com.studyroom.studyroomreserve.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.studyroom.studyroomreserve.VO.*;
+import com.studyroom.studyroomreserve.config.UploadProperties;
 import com.studyroom.studyroomreserve.entity.Reservation;
 import com.studyroom.studyroomreserve.entity.Seat;
 import com.studyroom.studyroomreserve.exception.BizException;
@@ -15,7 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.studyroom.studyroomreserve.mapper.StudyRoomMapper;
 import com.studyroom.studyroomreserve.entity.StudyRoom;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -23,6 +27,7 @@ import java.util.Set;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ReservationServiceImpl extends ServiceImpl<ReservationMapper, Reservation> implements ReservationService {
@@ -31,6 +36,8 @@ public class ReservationServiceImpl extends ServiceImpl<ReservationMapper, Reser
     private SeatService seatService;
     @Resource
     private StudyRoomMapper studyRoomMapper;
+    @Resource
+    private UploadProperties uploadProperties;
 
 
     @Override
@@ -176,6 +183,49 @@ public class ReservationServiceImpl extends ServiceImpl<ReservationMapper, Reser
         seatService.updateById(seat);
     }
 
+    @Override
+    @Transactional
+    public void signWithPhoto(Long userId, Long id, Double lat, Double lon, MultipartFile file) {
+        Reservation r = this.getById(id);
+        if (r == null) throw new BizException(400, "预约不存在");
+        if (!r.getUserId().equals(userId)) throw new BizException(403, "不能操作他人的预约");
+        if (r.getStatus() != 0) throw new BizException(400, "当前状态不能签到");
+
+        Seat seat = seatService.getById(r.getSeatId());
+        StudyRoom room = studyRoomMapper.selectById(seat.getRoomId());
+        if (room == null || room.getLatitude() == null || room.getLongitude() == null)
+            throw new BizException(400, "该自习室未设置签到位置，无法签到");
+        if (lat == null || lon == null)
+            throw new BizException(400, "未获取到你的位置，请开启定位后重试");
+
+        double dist = LocationUtil.distance(lat, lon, room.getLatitude(), room.getLongitude());
+        if (dist > room.getRadius())
+            throw new BizException(400, "你不在自习室范围内（当前距离约 " + Math.round(dist) + " 米），无法签到");
+
+        if (file == null || file.isEmpty())
+            throw new BizException(400, "签到照片不能为空");
+
+        File dir = new File(uploadProperties.getUploadPath());
+        if (!dir.exists()) dir.mkdirs();
+        String original = file.getOriginalFilename();
+        String ext = (original != null && original.contains("."))
+                ? original.substring(original.lastIndexOf(".")) : ".jpg";
+        String fileName = UUID.randomUUID().toString().replace("-", "") + ext;
+        try {
+            file.transferTo(new File(dir, fileName));
+        } catch (IOException e) {
+            throw new BizException(400, "照片保存失败");
+        }
+
+        r.setSignImage(fileName);
+        r.setStatus(1);
+        r.setSignInTime(LocalDateTime.now());
+        this.updateById(r);
+        seat.setStatus(1);
+        seatService.updateById(seat);
+    }
+
+
 
     @Override
     @Transactional
@@ -319,7 +369,6 @@ public class ReservationServiceImpl extends ServiceImpl<ReservationMapper, Reser
         }
         return streak;
     }
-
 
 
 }

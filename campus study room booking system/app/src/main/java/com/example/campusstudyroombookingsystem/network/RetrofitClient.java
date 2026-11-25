@@ -28,7 +28,8 @@ import com.example.campusstudyroombookingsystem.LoginActivity;
 
 public class RetrofitClient {
 
-    private static final String BASE_URL = "http://208a666b.r43.cpolar.top";
+    public static final String BASE_URL =
+            "http://208a666b.r43.cpolar.top";
 
     private static volatile ApiService apiService;
 
@@ -85,8 +86,9 @@ public class RetrofitClient {
                             .addInterceptor(tokenInterceptor)
                             .addInterceptor(authInterceptor)   // 响应统一鉴权
                             .addInterceptor(logging)
-                            .connectTimeout(15, TimeUnit.SECONDS)
-                            .readTimeout(15, TimeUnit.SECONDS)
+                            .connectTimeout(30, TimeUnit.SECONDS)
+                            .readTimeout(120, TimeUnit.SECONDS)
+                            .writeTimeout(120, TimeUnit.SECONDS)   // 上传大文件关键，必须加
                             .build();
 
                     Gson gson = new GsonBuilder().create();

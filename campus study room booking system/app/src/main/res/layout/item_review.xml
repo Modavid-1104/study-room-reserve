@@ -36,5 +36,13 @@
             android:layout_marginTop="8dp"
             android:textColor="?attr/colorControlNormal"
             android:textSize="13sp" />
+
+        <LinearLayout
+            android:id="@+id/mediaContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="10dp" />
+
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

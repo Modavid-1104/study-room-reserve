@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -32,4 +33,16 @@ public class ReviewController {
     public Result<List<Review>> list(@RequestParam Long roomId) {
         return Result.success(reviewService.listByRoom(roomId));
     }
+
+    @PostMapping("/create/media")
+    @Operation(summary = "提交评价（含图片/视频）")
+    public Result<?> createMedia(@RequestAttribute("userId") Long userId,
+                                 @RequestParam("reservationId") Long reservationId,
+                                 @RequestParam("score") Integer score,
+                                 @RequestParam("content") String content,
+                                 @RequestParam("files") MultipartFile[] files) {
+        reviewService.createReviewWithMedia(userId, reservationId, score, content, files);
+        return Result.success();
+    }
+
 }

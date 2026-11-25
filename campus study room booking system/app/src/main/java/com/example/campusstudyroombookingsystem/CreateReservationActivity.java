@@ -1,7 +1,9 @@
 package com.example.campusstudyroombookingsystem;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Button;
@@ -9,11 +11,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.campusstudyroombookingsystem.model.ApiResponse;
 import com.example.campusstudyroombookingsystem.model.CreateReservationRequest;
 import com.example.campusstudyroombookingsystem.network.RetrofitClient;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.example.campusstudyroombookingsystem.util.AlarmHelper;
+import android.os.Build;
 
 
 import java.text.SimpleDateFormat;
@@ -60,6 +66,13 @@ public class CreateReservationActivity extends AppCompatActivity {
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS}, 300);
+        }
+
         // 显示左侧返回箭头
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -108,6 +121,14 @@ public class CreateReservationActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<ApiResponse<Void>> call,
                                            Response<ApiResponse<Void>> response) {
+                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                            AlarmHelper.setReminder(CreateReservationActivity.this,
+                                    startCalendar.getTimeInMillis(),
+                                    "自习室",
+                                    (int) (startCalendar.getTimeInMillis() / 1000));
+                            Toast.makeText(CreateReservationActivity.this, "预约成功", Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                             Toast.makeText(CreateReservationActivity.this, "预约成功", Toast.LENGTH_SHORT).show();
                             finish();   // 关闭当前页，回到座位页

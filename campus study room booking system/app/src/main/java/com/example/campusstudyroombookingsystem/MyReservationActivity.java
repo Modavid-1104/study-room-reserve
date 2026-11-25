@@ -2,11 +2,15 @@ package com.example.campusstudyroombookingsystem;
 
 import android.content.Intent;
 import android.location.LocationListener;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -23,8 +27,12 @@ import android.location.LocationManager;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.example.campusstudyroombookingsystem.model.SignRequest;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 
 
+import java.io.File;
 import java.util.List;
 
 import retrofit2.Call;
@@ -36,6 +44,11 @@ public class MyReservationActivity extends AppCompatActivity {
     private ReservationAdapter adapter;
     private long pendingSignId = -1;          // 待签到的预约id
     private static final int REQ_LOCATION = 1001;
+    private static final int REQ_CAMERA = 100;
+    private File photoFile;
+    private double pendingLat, pendingLon;          // 拍照前先存定位坐标
+    private static final int REQ_CAMERA_PERM = 1002;
+
 
 
     @Override
@@ -49,7 +62,16 @@ public class MyReservationActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
         loadData();
         adapter.setOnCancelListener(reservation -> doCancel(reservation.getId()));
-        adapter.setOnSignListener(reservation -> doSign(reservation.getId()));
+        adapter.setOnSignListener(reservation -> {
+            Intent intent = new Intent(this, SignMapActivity.class);
+            intent.putExtra("reservationId", reservation.getId());
+            intent.putExtra("roomName", reservation.getRoomName());
+            intent.putExtra("lat", reservation.getLatitude());
+            intent.putExtra("lon", reservation.getLongitude());
+            intent.putExtra("radius", reservation.getRadius());
+            startActivity(intent);
+        });
+
         adapter.setOnReviewListener(reservation -> {
             Intent intent = new Intent(MyReservationActivity.this, CreateReviewActivity.class);
             intent.putExtra("reservationId", reservation.getId());
@@ -96,6 +118,14 @@ public class MyReservationActivity extends AppCompatActivity {
                 Toast.makeText(this, "需要定位权限才能签到", Toast.LENGTH_SHORT).show();
             }
         }
+        if (requestCode == REQ_CAMERA_PERM) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                takePhoto();
+            } else {
+                Toast.makeText(this, "需要相机权限才能拍照签到", Toast.LENGTH_SHORT).show();
+            }
+        }
+
     }
 
     // 用 LocationManager 取坐标
@@ -106,39 +136,70 @@ public class MyReservationActivity extends AppCompatActivity {
                 Toast.makeText(this, "暂时获取不到定位，请稍后再试", Toast.LENGTH_SHORT).show();
                 return;
             }
-            requestSign(pendingSignId, location.getLatitude(), location.getLongitude());
+            // 先把坐标存起来，拍照回来上传时用
+            pendingLat = location.getLatitude();
+            pendingLon = location.getLongitude();
+
+            // 再检查相机权限（CAMERA 是危险权限，必须运行时申请）
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA}, REQ_CAMERA_PERM);
+            } else {
+                takePhoto();
+            }
         });
     }
 
 
 
-    // 带坐标调签到接口
-    private void requestSign(long id, double lat, double lon) {
-        RetrofitClient.getApiService(this)
-                .signReservation(id, new SignRequest(lat, lon))
-                .enqueue(new Callback<ApiResponse<Void>>() {
-                    @Override
-                    public void onResponse(Call<ApiResponse<Void>> call,
-                                           Response<ApiResponse<Void>> response) {
-                        if (response.isSuccessful() && response.body() != null
-                                && response.body().isSuccess()) {
-                            Toast.makeText(MyReservationActivity.this, "签到成功", Toast.LENGTH_SHORT).show();
-                            loadData();
-                        } else {
-                            // 透传后端真实原因（距离、定位等）
-                            String msg = response.body() != null && response.body().getMsg() != null
-                                    ? response.body().getMsg() : "签到失败";
-                            Toast.makeText(MyReservationActivity.this, msg, Toast.LENGTH_LONG).show();
-                        }
-                    }
 
-                    @Override
-                    public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
-                        Toast.makeText(MyReservationActivity.this,
-                                "网络异常：" + t.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
+//    // 带坐标调签到接口
+//    private void requestSign(long id, double lat, double lon) {
+//        RetrofitClient.getApiService(this)
+//                .signReservation(id, new SignRequest(lat, lon))
+//                .enqueue(new Callback<ApiResponse<Void>>() {
+//                    @Override
+//                    public void onResponse(Call<ApiResponse<Void>> call,
+//                                           Response<ApiResponse<Void>> response) {
+//                        if (response.isSuccessful() && response.body() != null
+//                                && response.body().isSuccess()) {
+//                            Toast.makeText(MyReservationActivity.this, "签到成功", Toast.LENGTH_SHORT).show();
+//                            loadData();
+//                        } else {
+//                            // 透传后端真实原因（距离、定位等）
+//                            String msg = response.body() != null && response.body().getMsg() != null
+//                                    ? response.body().getMsg() : "签到失败";
+//                            Toast.makeText(MyReservationActivity.this, msg, Toast.LENGTH_LONG).show();
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+//                        Toast.makeText(MyReservationActivity.this,
+//                                "网络异常：" + t.getMessage(), Toast.LENGTH_LONG).show();
+//                    }
+//                });
+//    }
+
+    private void takePhoto() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        photoFile = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                "sign_" + System.currentTimeMillis() + ".jpg");
+        Uri photoUri = FileProvider.getUriForFile(this,
+                getPackageName() + ".fileprovider", photoFile);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+        startActivityForResult(intent, REQ_CAMERA);
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQ_CAMERA && resultCode == RESULT_OK) {
+            uploadSignPhoto(photoFile);
+        }
+    }
+
 
 
     private void doSignOut(long id) {
@@ -217,5 +278,38 @@ public class MyReservationActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+    private void uploadSignPhoto(File photo) {
+        RequestBody fileBody = RequestBody.create(photo, MediaType.parse("image/jpeg"));
+        MultipartBody.Part filePart = MultipartBody.Part.createFormData(
+                "file", photo.getName(), fileBody);
+
+        RequestBody latBody = RequestBody.create(null, String.valueOf(pendingLat));
+        RequestBody lonBody = RequestBody.create(null, String.valueOf(pendingLon));
+
+        RetrofitClient.getApiService(this)
+                .signWithPhoto(pendingSignId, latBody, lonBody, filePart)
+                .enqueue(new Callback<ApiResponse<Void>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Void>> call,
+                                           Response<ApiResponse<Void>> response) {
+                        if (response.isSuccessful() && response.body() != null
+                                && response.body().isSuccess()) {
+                            Toast.makeText(MyReservationActivity.this, "签到成功", Toast.LENGTH_SHORT).show();
+                            loadData();
+                        } else {
+                            String msg = response.body() != null && response.body().getMsg() != null
+                                    ? response.body().getMsg() : "签到失败";
+                            Toast.makeText(MyReservationActivity.this, msg, Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                        Toast.makeText(MyReservationActivity.this,
+                                "网络异常：" + t.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
 
 }

@@ -14,4 +14,9 @@ public class ReservationListVo {
     private Integer status;
     private LocalDateTime signInTime;
     private LocalDateTime createTime;
+    private Long roomId;
+    private Double latitude;
+    private Double longitude;
+    private Integer radius;
+
 }

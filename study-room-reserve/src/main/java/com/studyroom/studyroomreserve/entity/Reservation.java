@@ -21,5 +21,6 @@ public class Reservation {
     private LocalDateTime updateTime;
     @TableLogic
     private Integer isDeleted;
+    private String signImage;
 }
 

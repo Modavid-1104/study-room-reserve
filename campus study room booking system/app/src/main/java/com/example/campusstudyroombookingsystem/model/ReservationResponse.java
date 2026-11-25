@@ -11,6 +11,11 @@ public class ReservationResponse {
     private String signInTime;
     private String signOutTime;   // 新增
     private String createTime;
+    private Long roomId;
+    private Double latitude;
+    private Double longitude;
+    private Integer radius;
+
 
 
 
@@ -24,4 +29,17 @@ public class ReservationResponse {
     public String getSignInTime() { return signInTime; }
     public String getCreateTime() { return createTime; }
     public String getSignOutTime(){return signOutTime;}
+
+    public Integer getRadius() {
+        return radius;
+    }
+    public Double getLatitude() {
+        return latitude;
+    }
+    public Long getRoomId() {
+        return roomId;
+    }
+    public Double getLongitude() {
+        return longitude;
+    }
 }

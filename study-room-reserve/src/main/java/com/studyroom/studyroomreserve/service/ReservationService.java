@@ -14,5 +14,6 @@ public interface ReservationService extends IService<Reservation> {
     QuickResultVo quickReserve(Long userId, QuickReservationVo vo);
     void signOutReservation(Long userId, Long id);
     StatisticsVo getStatistics(Long userId);
-
+    void signWithPhoto(Long userId,Long id,Double lat,Double lon,
+                       org.springframework.web.multipart.MultipartFile file);
 }
