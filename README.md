@@ -1,13 +1,14 @@
 # 校园自习室预约系统（含 AI 对话智能体）
 
-一个前后端分离的校园自习室 / 座位预约系统，包含 **Spring Boot 后端**、**Android 客户端**，并基于大模型 **Function Calling** 实现了一个可对话操作的 AI 预约智能体。支持房间与座位浏览、预约 / 取消、**高德地图可视化拍照签到**、签到前震动提醒、**WebSocket 实时消息推送**、**评价拍照 / 录像**、超时自动处理、多轮对话预约等完整业务闭环。
+一个前后端分离的校园自习室 / 座位预约系统，包含 **Spring Boot 后端**、**Android 客户端**，并基于大模型 **Function Calling** 实现了一个可对话操作的 AI 预约智能体。支持房间与座位浏览、预约 / 取消、**高德地图可视化拍照签到**、签到前震动提醒、**WebSocket 实时消息推送**、**学生与管理员在线咨询私信**、**评价拍照 / 录像**、超时自动处理、多轮对话预约等完整业务闭环；客户端采用**底部导航 + 多 Fragment** 架构，各列表支持下拉刷新。
+
 
 ## 技术栈
 
 | 层级 | 技术 |
 | --- | --- |
 | 后端 | Spring Boot、MyBatis、MySQL、Redis、JWT、Maven、Knife4j、Hutool、WebSocket |
-| Android | Java 11、Retrofit、OkHttp、Gson、Material Components、Glide、Lottie、高德地图 SDK、AlarmManager |
+| Android | Java 11、Retrofit、OkHttp、Gson、Material Components（BottomNavigationView）、SwipeRefreshLayout、Glide、Lottie、高德地图 SDK、AlarmManager |
 | AI 智能体 | DeepSeek（Function Calling）、Redis 多轮记忆、提示词工程 |
 | 部署 | cpolar 内网穿透（无需公网服务器） |
 
@@ -17,6 +18,8 @@
 - **地图可视化签到**：基于高德地图展示房间位置、签到半径圆圈与当前位置蓝点，统一使用 GCJ-02 坐标系；进入范围后调起相机拍照，照片随坐标上传完成签到。
 - **签到提醒**：预约创建后通过 AlarmManager 注册，在开始时间前 15 分钟触发震动并发送通知。
 - **实时消息推送**：后端基于 WebSocket 维护在线连接，管理员单发 / 群发消息后实时推送到客户端，App 断线自动重连；不在线时消息仍入库，可稍后拉取。
+- **在线咨询私信**：学生可在消息页发起与管理员的会话，基于 WebSocket 实时双向收发，支持离线消息与未读角标；会话与私信分别由 `conversation`、`private_message` 表存储，与公告功能并存。
+- **全局导航与交互**：采用单 Activity + 多 Fragment 与底部导航栏（首页 / 预约 / 消息 / 我的），各列表支持下拉刷新，破坏性操作有确认提示。
 - **多媒体评价**：评价支持拍照和录像，文件经 Multipart 上传，通过 `review_media` 一对多表存储，并在评论列表中回显（图片直接展示、视频点击播放）。
 - **AI 对话智能体**：自然语言完成查房间、查座位、预约、查询我的预约、取消、签到、签退等操作，支持多轮上下文。
 - **管理端**：房间、座位、预约、用户与消息的管理维护。
@@ -70,6 +73,7 @@ study-room-booking-system/
         │   ├── network/                # Retrofit / OkHttp / 接口
         │   ├── model/                  # 数据模型
         │   ├── SignMapActivity.java    # 高德地图拍照签到页
+        │   ├── HomeFragment.java 等        # 底部导航各 Fragment（首页/预约/消息/我的）
         │   └── util/                   # WebSocket、震动提醒等工具
         ├── jniLibs/                    # 高德 native 库（arm64-v8a / armeabi-v7a）
         └── AndroidManifest.xml
@@ -115,6 +119,7 @@ mvn spring-boot:run
 
 - [x] 高德地图可视化拍照签到，并在真机完成"范围内允许、范围外拒绝"验证
 - [x] 签到前震动提醒、WebSocket 实时消息推送、多媒体评价
+- [x] 底部导航重构、下拉刷新、学生与管理员在线咨询私信
 - [ ] 后端统一坐标系转换（WGS-84 / GCJ-02 / BD-09）
 - [ ] 后端部署到云服务器，替代内网穿透
 - [ ] 收藏、管理员数据看板等扩展功能

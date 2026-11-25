@@ -42,6 +42,10 @@ public class AdminRoomActivity extends AppCompatActivity {
         // 新增按钮下一轮接表单，先占位
         findViewById(R.id.btnAdd).setOnClickListener(v -> showFormDialog(null));
 
+        findViewById(R.id.btnChatList).setOnClickListener(v ->
+                startActivity(new Intent(AdminRoomActivity.this,
+                        ConversationListActivity.class)));
+
         adapter.setOnRoomActivityListener(new AdminRoomAdapter.OnRoomActivityListener(){
             @Override
             public void onEdit(StudyRoomResponse room){

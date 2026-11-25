@@ -54,19 +54,11 @@
             android:exported="false" />
 
         <activity
-            android:name=".RoomListActivity"
-            android:exported="false" />
-
-        <activity
             android:name=".RoomDetailActivity"
             android:exported="false" />
 
         <activity
             android:name=".SeatActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".MyReservationActivity"
             android:exported="false" />
 
         <activity
@@ -83,13 +75,19 @@
 
         <activity android:name=".AdminRoomActivity"/>
         <activity android:name=".AdminSeatActivity" />
-        <activity android:name=".MessageActivity" />
         <activity android:name=".AdminMessageActivity" />
         <activity android:name=".QuickReserveActivity" />
         <activity android:name=".StatisticsActivity" />
         <activity android:name=".ChatActivity" />
         <activity android:name=".SignMapActivity" android:exported="false" />
+        <activity
+            android:name=".ConversationListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".PrivateChatActivity"
+            android:exported="false" />
         <service android:name="com.amap.api.location.APSService" />
+
 
         <provider
             android:name="androidx.core.content.FileProvider"

@@ -51,5 +51,6 @@ dependencies {
     implementation(libs.amap.map)
     implementation(libs.glide)
 
+    implementation(libs.swipe.refresh)
 
 }

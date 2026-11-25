@@ -2,10 +2,12 @@ package com.example.campusstudyroombookingsystem.network;
 
 import com.example.campusstudyroombookingsystem.model.ApiResponse;
 import com.example.campusstudyroombookingsystem.model.ChatRequestBody;
+import com.example.campusstudyroombookingsystem.model.ConversationResponse;
 import com.example.campusstudyroombookingsystem.model.LoginRequest;
 import com.example.campusstudyroombookingsystem.model.MessageResponse;
 import com.example.campusstudyroombookingsystem.model.MessageSendRequest;
 import com.example.campusstudyroombookingsystem.model.PageResponse;
+import com.example.campusstudyroombookingsystem.model.PrivateMessageResponse;
 import com.example.campusstudyroombookingsystem.model.QuickReservationRequest;
 import com.example.campusstudyroombookingsystem.model.QuickResultResponse;
 import com.example.campusstudyroombookingsystem.model.RegisterRequest;
@@ -16,6 +18,7 @@ import com.example.campusstudyroombookingsystem.model.RoomRequest;
 import com.example.campusstudyroombookingsystem.model.SeatBatchRequest;
 import com.example.campusstudyroombookingsystem.model.SeatRequest;
 import com.example.campusstudyroombookingsystem.model.SeatResponse;
+import com.example.campusstudyroombookingsystem.model.SendPrivateMsgRequest;
 import com.example.campusstudyroombookingsystem.model.SignRequest;
 import com.example.campusstudyroombookingsystem.model.StatisticsResponse;
 import com.example.campusstudyroombookingsystem.model.StudyRoomResponse;
@@ -141,6 +144,44 @@ public interface ApiService {
             @Part("score") RequestBody score,
             @Part("content") RequestBody content,
             @Part List<MultipartBody.Part> files);
+
+    // ===== 学生端：在线咨询 =====
+
+    // 获取或创建我的咨询会话
+    @GET("chat/conversation")
+    Call<ApiResponse<ConversationResponse>> myConversation();
+
+    // 我的会话列表
+    @GET("chat/list")
+    Call<ApiResponse<List<ConversationResponse>>> myConversationList();
+
+    // 历史消息
+    @GET("chat/history/{conversationId}")
+    Call<ApiResponse<List<PrivateMessageResponse>>> privateHistory(
+            @Path("conversationId") long conversationId);
+
+    // 发送
+    @POST("chat/send")
+    Call<ApiResponse<Void>> sendPrivate(@Body SendPrivateMsgRequest request);
+
+    // 标记已读
+    @POST("chat/read/{conversationId}")
+    Call<ApiResponse<Void>> markPrivateRead(@Path("conversationId") long conversationId);
+
+    // ===== 管理员端：咨询会话 =====
+
+    @GET("admin/chat/list")
+    Call<ApiResponse<List<ConversationResponse>>> adminConversationList();
+
+    @GET("admin/chat/history/{conversationId}")
+    Call<ApiResponse<List<PrivateMessageResponse>>> adminPrivateHistory(
+            @Path("conversationId") long conversationId);
+
+    @POST("admin/chat/send")
+    Call<ApiResponse<Void>> adminSendPrivate(@Body SendPrivateMsgRequest request);
+
+    @POST("admin/chat/read/{conversationId}")
+    Call<ApiResponse<Void>> adminMarkPrivateRead(@Path("conversationId") long conversationId);
 
 
 }

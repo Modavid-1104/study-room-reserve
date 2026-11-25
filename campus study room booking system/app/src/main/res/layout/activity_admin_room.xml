@@ -39,6 +39,12 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:text="发消息" />
+        <Button
+            android:id="@+id/btnChatList"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="咨询" />
 
     </LinearLayout>
 

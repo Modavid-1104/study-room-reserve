@@ -13,6 +13,8 @@ gson = "2.11.0"
 amap = "10.0.600"
 amapLocation = "6.4.9"
 glide = "4.16.0"
+swipeRefresh = "1.1.0"
+
 
 
 
@@ -32,6 +34,7 @@ gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 amap-map = { group = "com.amap.api", name = "3dmap", version.ref = "amap" }
 amap-location = { group = "com.amap.api", name = "location", version.ref = "amapLocation" }
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
+swipe-refresh = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swipeRefresh" }
 
 
 [plugins]

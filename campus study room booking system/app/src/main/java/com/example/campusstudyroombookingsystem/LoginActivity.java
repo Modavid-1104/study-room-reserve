@@ -35,7 +35,7 @@ public class LoginActivity extends AppCompatActivity {
         String savedToken = sp.getString("token", "");
         if (!TextUtils.isEmpty(savedToken)) {
             // 本地已有登录凭证，跳过登录页，直接进主页
-            startActivity(new Intent(this, RoomListActivity.class));
+            startActivity(new Intent(this, MainActivity.class));
             finish();
             return;
         }
@@ -87,7 +87,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
                                 Toast.makeText(LoginActivity.this, "登录成功", Toast.LENGTH_SHORT).show();
-                                startActivity(new Intent(LoginActivity.this, RoomListActivity.class));
+                                startActivity(new Intent(LoginActivity.this, MainActivity.class));
                                 finish();
                             } else {
                                 // 账号不存在 / 密码错误等，后端返回的提示
